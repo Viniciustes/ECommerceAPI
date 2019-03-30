@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ECommerceAPI.Domain.Interfaces.Repositories;
+using ECommerceAPI.Infrastructure.Context;
+using ECommerceAPI.Infrastructure.Repositories;
+using ECommerceAPI.Service.Interfaces;
+using ECommerceAPI.Service.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace ECommerceAPI
 {
@@ -21,13 +21,19 @@ namespace ECommerceAPI
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<ECommerceContext>(opt =>
+               opt.UseInMemoryDatabase("ECommerceConnection"));
+
+            //services.AddDbContext<ECommerceContext>(options =>
+            //    options.UseSqlServer(Configuration.GetConnectionString("ECommerceConnection")));
+
+            DependencyInjection(services);
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
@@ -36,6 +42,15 @@ namespace ECommerceAPI
             }
 
             app.UseMvc();
+        }
+
+        private static void DependencyInjection(IServiceCollection services)
+        {
+            services.AddScoped<ICategoriaService, CategoriaService>();
+            services.AddScoped<IProdutoService, ProdutoService>();
+
+            services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+            services.AddScoped<IProdutoRepository, ProdutoRepository>();
         }
     }
 }
